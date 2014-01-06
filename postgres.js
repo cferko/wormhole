@@ -1,41 +1,18 @@
 /*****************************************
-    setup the database connection pool 
+    initial setup
 */
-var tedious = require('tedious');
-var genericPool = require('generic-pool');
+var pg = require('pg');
 var fs = require("fs");
 
 /*
     My config.json looks like:
 {
-    "server":"avatar.x5e.com", 
-    "userName": "sa", 
-    "password": "p@ssw0rd",
     "whitelist": "0-9A-z/+=-",
-    "tester": "tester.html" 
+    "tester": "tester.html",
+    "conString": "postgres://darin:5432@localhost/db_channels"
 }
 */
 var config = JSON.parse(fs.readFileSync("config.json","utf8"));
-
-
-function createConnection(finished) {
-    var connection = new tedious.Connection(config);
-    connection.on('debug', function(text) {
-        //console.log("connection debug:",text);
-      });
-    connection.on('connect',function(err) {
-        finished(err,connection)
-    });
-}
-
-connectionPool = genericPool.Pool({
-    name : "sqlserver",
-    create : createConnection,
-    destroy : function(connection) { connection.close(); },
-    max : 10,
-    idleTimeoutMillis : 60*1000,
-    log : function(str,level) { if (level != "verbose") console.log(str) }
-})
 
 
 /**********************************************************
@@ -76,9 +53,9 @@ function jsonToSql(struct) {
     var argsA = [ ];
     for (var key in argsObj) {
         if (!paramPattern.test(key)) {bad(key);}
-        var pair = "@" + key + "=" + valToSql(argsObj[key]);
+        var pair =  key + ":=" + valToSql(argsObj[key]);
         argsA.push(pair); }
-    return "exec " + sproc + " " + argsA.join() + ";" ;
+    return "select " + sproc + "(" + argsA.join() + ");" ;
 }
 
 /*
@@ -86,36 +63,6 @@ tester = ["exsp_foo",{"x":3,"y":"z"}];
 //tester = ["exsp_foo",{"bla":"Ilikecheese"}];
 console.log(jsonToSql(tester));
 */
-
-
-
-/*************************************************
-    code to take the sql and actually hit the db */
-
-// onResult(err,result)
-function hitDb(sql,onResult)
-{
-    return function (err,connection) {
-      if (err) { return onResult(err); }
-      var resultRows = [ ];
-      request = new tedious.Request(sql, function(err, rowCount) {
-        connectionPool.release(connection);
-        if (err) onResult(err);
-        else onResult(null,JSON.stringify(resultRows));
-      });
-    
-      request.on('row', function(columns) {
-        var thisRow = { };
-        //console.log(columns);
-        columns.forEach(function(column) {
-            thisRow[column.metadata.colName] = column.value;
-        });
-        console.log(JSON.stringify(thisRow));
-        resultRows.push(thisRow);
-      });
-      connection.execSql(request);
-    }
-}
 
 /*******************************
     HTTP and integration code */
@@ -133,9 +80,9 @@ http.createServer(function (request, response) {
                 response.end("problems");
         } else {
             response.writeHead(200, {'Content-Type': 'application/json'}); 
-            response.write(output);
             console.log("output:");
             console.log(output);
+            response.write(JSON.stringify(output.rows));
             response.end();
         }
     }
@@ -161,9 +108,19 @@ http.createServer(function (request, response) {
                     var what = parsed["what"];
                 } else { what=body;}
                 var sql = jsonToSql(JSON.parse(what)) 
+                console.log(sql);
             } 
             catch (err) { onDbResult(err); }
-            connectionPool.acquire(hitDb(sql,onDbResult));
+            pg.connect(config["conString"],function(err,client,done) {
+                if (err){
+                    console.log(err);
+                    response.writeHead(500);
+                    response.end("db problems");
+                } else {
+                    client.query(sql,onDbResult);
+                    done();
+                }
+            });
         })
     }
 }).listen(3459);
