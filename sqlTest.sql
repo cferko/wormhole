@@ -20,8 +20,17 @@ exsp_test_many()
 RETURNS SETOF tbl_test
 as $body$
 BEGIN
-    return query select * from tbl_test limit 1;
+    return query select * from tbl_test;
 END;
 $body$ LANGUAGE plpgsql;
 
 select exsp_test_many();
+
+create or replace function
+exsp_test_exception()
+RETURNS boolean
+as $body$
+BEGIN
+    RAISE EXCEPTION 'foo bar';
+END;
+$body$ LANGUAGE plpgsql;

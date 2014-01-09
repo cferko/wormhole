@@ -5,10 +5,8 @@ var pg = require('pg');
 var fs = require("fs");
 
 /*
-    My config.json looks like:
+My config.json looks like:
 {
-    "whitelist": "0-9A-z/+=-",
-    "tester": "tester.html",
     "conString": "postgres://darin:5432@localhost/db_channels"
 }
 */
@@ -20,7 +18,7 @@ var config = JSON.parse(fs.readFileSync("config.json","utf8"));
 */
 
 sprocPattern = RegExp("^exsp_\\w*$");
-stringArgPattern = RegExp("^[" + config.whitelist + "]*$");
+stringArgPattern = RegExp("^[0-9A-z/+=-]*$");
 paramPattern = RegExp("^\\w+$");
 function valToSql(val) {
     if (val === null || val === undefined) {return "NULL";}
@@ -55,14 +53,9 @@ function jsonToSql(struct) {
         if (!paramPattern.test(key)) {bad(key);}
         var pair =  key + ":=" + valToSql(argsObj[key]);
         argsA.push(pair); }
-    return "select " + sproc + "(" + argsA.join() + ");" ;
+    return "select * from " + sproc + "(" + argsA.join() + ");" ;
 }
 
-/*
-tester = ["exsp_foo",{"x":3,"y":"z"}];
-//tester = ["exsp_foo",{"bla":"Ilikecheese"}];
-console.log(jsonToSql(tester));
-*/
 
 /*******************************
     HTTP and integration code */
@@ -88,7 +81,7 @@ http.createServer(function (request, response) {
     }
     if (request.method=="GET") 
     {
-        fs.readFile(config["tester"],"utf8",function(err,data) {
+        fs.readFile("pgTester.html","utf8",function(err,data) {
             if (err) { 
                 response.writeHead(500);
                 response.end("couldn't read tester");
@@ -110,7 +103,10 @@ http.createServer(function (request, response) {
                 var sql = jsonToSql(JSON.parse(what)) 
                 console.log(sql);
             } 
-            catch (err) { onDbResult(err); }
+            catch (err) { 
+                onDbResult(err); 
+                return;
+            }
             pg.connect(config["conString"],function(err,client,done) {
                 if (err){
                     console.log(err);
