@@ -90,6 +90,6 @@ http.createServer(function (request, response) {
             });
         })
     }
-}).listen(4444);
-console.log("listening on 4444")
+}).listen(config["port"]);
+console.log("started")
 
