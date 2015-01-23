@@ -10,14 +10,7 @@ if (process.argv.length < 3) {
 }
 loc = process.argv[2]
 
-/*
-My config.json looks like:
-{
-    "conString": "postgres://darin:5432@localhost/db_channels"
-}
-*/
 var config = JSON.parse(fs.readFileSync(loc,"utf8"));
-
 console.log(config)
 
 
@@ -53,8 +46,10 @@ http.createServer(function (request, response) {
             response.end();
         }
     }
-    if (request.method=="GET") 
-    {
+    if (request.url.indexOf(config["appKey"]) < 0) {
+        response.writeHead(500);
+        response.end("bad appKey");
+    } else if (request.method=="GET") {
         fs.readFile("tester.html","utf8",function(err,data) {
             if (err) { 
                 response.writeHead(500);
@@ -63,21 +58,23 @@ http.createServer(function (request, response) {
                 response.end(data);
             }
         });
-    }
-    else if (request.method=="POST") {
+    } else if (request.method=="POST") {
         var body = "";
         request.on("data",function(data) {body+=data;});   
         request.on("end",function() {
             var query = "";
             try { 
                 var ct = request.headers['content-type'];
-                if (ct == 'application/x-www-form-urlencoded') {
+                if (ct.indexOf("text") > -1) {
+                   query=body;
+                } else {
+                    // if (ct == 'application/x-www-form-urlencoded') {
+                    // console.log("assuming x-www-form-urlencoded")
                     var parsed = querystring.parse(body);
                     var query = parsed["query"];
-                } else { query=body;}
-                console.log(query);
-            } 
-            catch (err) { 
+                } 
+                //console.log(query);
+            } catch (err) { 
                 onDbResult(err); 
                 return;
             }

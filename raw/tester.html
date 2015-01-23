@@ -6,7 +6,7 @@ function sH(k,v) {
 }
 //var testData = JSON.stringify(["exsp_test_one",{"x":3,"y":4}]);
 //var testData = JSON.stringify(["exsp_test_exception",{}]);
-var testData = "select * from symb.prefixes;";
+var testData = "select * from symb.prefixes limit 2;";
 console.log(testData);
 function foobar() {
     var request = new XMLHttpRequest();
@@ -24,7 +24,7 @@ function foobar() {
 }
 </script>
 <form method="POST">
-<input type="text" name="query" value="select * from symb.prefixes;" size="40"/>
+<input type="text" name="query" value="select * from symb.prefixes limit 2;" size="40"/>
 <br />
 <input type="submit" value="via form post" />
 </form>
