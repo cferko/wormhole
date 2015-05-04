@@ -62,6 +62,7 @@ http.createServer(function (request, response) {
         var body = "";
         request.on("data",function(data) {body+=data;});   
         request.on("end",function() {
+            console.log(body)
             var query = "";
             try { 
                 var ct = request.headers['content-type'];
