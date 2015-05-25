@@ -11,7 +11,7 @@ if (process.argv.length < 3) {
 loc = process.argv[2]
 
 var config = JSON.parse(fs.readFileSync(loc,"utf8"));
-console.log(config)
+//console.log(config)
 
 
 stringArgPattern = RegExp("^[0-9A-z/+=-]*$");
@@ -62,7 +62,6 @@ http.createServer(function (request, response) {
         var body = "";
         request.on("data",function(data) {body+=data;});   
         request.on("end",function() {
-            console.log(body)
             var query = "";
             try { 
                 var ct = request.headers['content-type'];
@@ -74,7 +73,8 @@ http.createServer(function (request, response) {
                     var parsed = querystring.parse(body);
                     var query = parsed["query"];
                 } 
-                //console.log(query);
+                toLog = [(new Date()).toString(),request.connection.remoteAddress,query]
+                console.log(JSON.stringify(toLog))
             } catch (err) { 
                 onDbResult(err); 
                 return;
@@ -92,5 +92,5 @@ http.createServer(function (request, response) {
         })
     }
 }).listen(config["port"]);
-console.log("started")
+console.warn("started")
 
