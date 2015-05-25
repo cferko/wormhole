@@ -37,7 +37,7 @@ http.createServer(function (request, response) {
         if (err){
                 console.log(err);
                 response.writeHead(500);
-                response.end("problems");
+                response.end(err.toString());
         } else {
             response.writeHead(200, {'Content-Type': 'application/json'}); 
             //console.log("output:");
@@ -83,7 +83,7 @@ http.createServer(function (request, response) {
                 if (err){
                     console.log(err);
                     response.writeHead(500);
-                    response.end("db problems");
+                    response.end("could not connect to db");
                 } else {
                     client.query(query,onDbResult);
                     done();
