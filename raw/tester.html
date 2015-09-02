@@ -1,4 +1,13 @@
 <html>
+<head>
+<style>
+* {
+    font-family: monospace;
+    font-size: xx-large;
+}
+</style>
+</head>
+<body>
 <script>
 function sH(k,v) {
     //console.log(k,v);
@@ -24,7 +33,9 @@ function foobar() {
 }
 </script>
 <form method="POST">
-<input type="text" name="query" value="select * from symb.prefixes limit 2;" size="40"/>
+<textarea name="query" rows="20" cols="40">
+select * from symb.prefixes limit 2;
+</textarea>
 <br />
 <input type="submit" value="via form post" />
 </form>
@@ -48,4 +59,5 @@ function foobar() {
 <div id="statusDiv"></div>
 <pre id="pre1">
 </pre>
+</body>
 </html>
