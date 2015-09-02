@@ -3,61 +3,42 @@
 <style>
 * {
     font-family: monospace;
-    font-size: xx-large;
+    font-size: x-large;
+}
+textarea {
+    display: "block";
+    width: 100%;
+    height: 50%;
 }
 </style>
 </head>
 <body>
+<textarea id="query" placeholder="(query)" onkeydown="onKey(event)">
+</textarea>
+<textarea id="results" placeholder="(results)">
+</textarea>
+</body>
 <script>
-function sH(k,v) {
-    //console.log(k,v);
-    document.getElementById(k).innerHTML = v;
-}
-//var testData = JSON.stringify(["exsp_test_one",{"x":3,"y":4}]);
-//var testData = JSON.stringify(["exsp_test_exception",{}]);
-var testData = "select * from symb.prefixes limit 2;";
-console.log(testData);
-function foobar() {
-    var request = new XMLHttpRequest();
-    function onStateChange() {
-        console.log("state",request.readyState);
-        if (request.readyState != 4) return;
-        sH("statusDiv",request.status);
-        sH("pre1",request.responseText);
+var qta = document.getElementById("query");
+var rta = document.getElementById("results");
+function onKey(ev) {
+    var key,isShift;
+    if (window.event) {
+        key = window.event.keyCode;
+        isShift = !! window.event.shiftKey; 
+    } else {
+        key = ev.which;
+        isShift = !! ev.shiftKey;
     }
-    request.onreadystatechange = onStateChange;
+    if (key != 13 || ! isShift) return;
+    var request = new XMLHttpRequest();
+    request.onreadystatechange = function() {
+        if (request.readyState != 4) return;
+        document.title = request.status
+        rta.value = request.responseText;
+    }
     request.open("POST",window.location.pathname,true);
-    console.log("opened");
-    request.send(testData);
-    console.log("done");
+    request.send(qta.value);
 }
 </script>
-<form method="POST">
-<textarea name="query" rows="20" cols="40">
-select * from symb.prefixes limit 2;
-</textarea>
-<br />
-<input type="submit" value="via form post" />
-</form>
-
-<!--
-<form method="POST">
-<input type="text" name="what" value='["exsp_test_many",{}]' size="40"/>
-<br />
-<input type="submit" value="via form post" />
-</form>
-
-<form method="POST">
-<input type="text" name="what" value='["exsp_test_exception",{}]' size="40"/>
-<br />
-<input type="submit" value="via form post" />
-</form>
--->
-
-<br /><br />
-<button onclick="foobar()" >or via ajax</button>
-<div id="statusDiv"></div>
-<pre id="pre1">
-</pre>
-</body>
 </html>
