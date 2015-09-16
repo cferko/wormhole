@@ -1,5 +1,6 @@
 <html>
 <head>
+<title>Wormhole</title>
 <style>
 * {
     font-family: monospace;
@@ -31,10 +32,17 @@ function onKey(ev) {
         isShift = !! ev.shiftKey;
     }
     if (key != 13 || ! isShift) return;
+    rta.style.background = "white";
+    ev.preventDefault();
+    ev.stopPropagation();
     var request = new XMLHttpRequest();
     request.onreadystatechange = function() {
         if (request.readyState != 4) return;
-        document.title = request.status
+        //document.title = request.status
+        if (request.status == 200)
+            rta.style.background = "lightgreen";
+        else
+            rta.style.background = "pink";
         rta.value = request.responseText;
     }
     request.open("POST",window.location.pathname,true);

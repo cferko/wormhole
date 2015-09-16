@@ -65,15 +65,21 @@ http.createServer(function (request, response) {
             var query = "";
             try { 
                 var ct = request.headers['content-type'];
+                var showMe = {ct:ct,body:body};
+                console.log(JSON.stringify(showMe));
                 if (ct.indexOf("text") > -1) {
                    query=body;
                 } else {
                     // if (ct == 'application/x-www-form-urlencoded') {
                     // console.log("assuming x-www-form-urlencoded")
                     var parsed = querystring.parse(body);
+                    if (! parsed.hasOwnProperty("query")) 
+                        return onDbResult("bad query");
                     var query = parsed["query"];
                 } 
-                toLog = [(new Date()).toString(),request.connection.remoteAddress,query]
+                if (! query) return onDbResult("bad query");
+                toLog = [(new Date()).toString(),
+                            request.connection.remoteAddress,query]
                 console.log(JSON.stringify(toLog))
             } catch (err) { 
                 onDbResult(err); 
