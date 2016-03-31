@@ -1,0 +1,5 @@
+{
+    "conString": "postgres://<USER>:<PASSWORD>@localhost/<DB>",
+    "appKey": "<APPKEY>",
+    "port": 5556
+}
